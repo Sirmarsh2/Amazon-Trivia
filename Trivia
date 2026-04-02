@@ -1,0 +1,689 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📦 Amazon Trivia Challenge</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Amazon Ember', 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #131921 0%, #232f3e 100%);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 700px;
+      width: 100%;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      font-size: 2.5rem;
+      color: #FF9900;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      font-size: 1.1rem;
+      color: #ddd;
+    }
+
+    .progress-container {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-size: 0.9rem;
+      color: #FF9900;
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #FF9900, #ffb84d);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .question-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid rgba(255, 153, 0, 0.3);
+      border-radius: 15px;
+      padding: 30px;
+      margin-bottom: 20px;
+    }
+
+    .question-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      color: #FF9900;
+      font-size: 0.9rem;
+      font-weight: bold;
+    }
+
+    .question-text {
+      font-size: 1.4rem;
+      margin-bottom: 25px;
+      line-height: 1.5;
+    }
+
+    .answers {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .answer-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      padding: 15px 20px;
+      border-radius: 10px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: left;
+    }
+
+    .answer-btn:hover {
+      background: rgba(255, 153, 0, 0.2);
+      border-color: #FF9900;
+      transform: translateX(5px);
+    }
+
+    .answer-btn.selected {
+      background: rgba(255, 153, 0, 0.3);
+      border-color: #FF9900;
+    }
+
+    .answer-btn.correct {
+      background: rgba(0, 200, 0, 0.3);
+      border-color: #00ff00;
+    }
+
+    .answer-btn.incorrect {
+      background: rgba(200, 0, 0, 0.3);
+      border-color: #ff0000;
+    }
+
+    .answer-btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+
+    .feedback {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 10px;
+      display: none;
+    }
+
+    .feedback.show {
+      display: block;
+    }
+
+    .feedback.correct {
+      background: rgba(0, 200, 0, 0.2);
+      border: 2px solid #00ff00;
+    }
+
+    .feedback.incorrect {
+      background: rgba(200, 0, 0, 0.2);
+      border: 2px solid #ff0000;
+    }
+
+    .next-btn {
+      background: #FF9900;
+      color: #131921;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 20px;
+      transition: all 0.3s ease;
+    }
+
+    .next-btn:hover {
+      background: #ffb84d;
+      transform: scale(1.02);
+    }
+
+    .next-btn:disabled {
+      background: #666;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .score-dots {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 15px;
+    }
+
+    .score-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .score-dot.correct {
+      background: #00ff00;
+    }
+
+    .score-dot.incorrect {
+      background: #ff0000;
+    }
+
+    .results {
+      display: none;
+      text-align: center;
+    }
+
+    .results.show {
+      display: block;
+    }
+
+    .results h2 {
+      font-size: 3rem;
+      margin-bottom: 20px;
+    }
+
+    .final-score {
+      font-size: 4rem;
+      color: #FF9900;
+      margin: 20px 0;
+    }
+
+    .score-breakdown {
+      display: flex;
+      justify-content: space-around;
+      margin: 30px 0;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .score-item {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 20px;
+      border-radius: 10px;
+      min-width: 150px;
+    }
+
+    .score-item h3 {
+      font-size: 2rem;
+      color: #FF9900;
+      margin-bottom: 5px;
+    }
+
+    .score-message {
+      font-size: 1.2rem;
+      margin: 20px 0;
+      color: #ddd;
+    }
+
+    .form-section {
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid rgba(255, 153, 0, 0.3);
+      border-radius: 15px;
+      padding: 30px;
+      margin-top: 30px;
+    }
+
+    .form-section h3 {
+      color: #FF9900;
+      margin-bottom: 10px;
+    }
+
+    .form-section p {
+      color: #ddd;
+      margin-bottom: 20px;
+      font-size: 0.95rem;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      color: #FF9900;
+      font-size: 0.9rem;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      font-size: 1rem;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #FF9900;
+    }
+
+    .submit-btn {
+      background: #FF9900;
+      color: #131921;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 10px;
+      transition: all 0.3s ease;
+    }
+
+    .submit-btn:hover {
+      background: #ffb84d;
+      transform: scale(1.02);
+    }
+
+    .confirmation {
+      display: none;
+      text-align: center;
+      padding: 40px;
+    }
+
+    .confirmation.show {
+      display: block;
+    }
+
+    .checkmark {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: #00ff00;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 3rem;
+    }
+
+    .confirmation h3 {
+      color: #FF9900;
+      font-size: 2rem;
+      margin-bottom: 15px;
+    }
+
+    .confirmation p {
+      color: #ddd;
+      margin-bottom: 10px;
+    }
+
+    .play-again-btn {
+      background: #FF9900;
+      color: #131921;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: all 0.3s ease;
+    }
+
+    .play-again-btn:hover {
+      background: #ffb84d;
+      transform: scale(1.02);
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      color: #888;
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 600px) {
+      .header h1 {
+        font-size: 2rem;
+      }
+
+      .question-text {
+        font-size: 1.2rem;
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+
+      .final-score {
+        font-size: 3rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📦 Amazon Trivia Challenge</h1>
+      <p>Test your knowledge about the world's most visited e-commerce platform!</p>
+    </div>
+
+    <div id="quiz-section">
+      <div class="progress-container">
+        <div class="progress-header">
+          <span id="question-counter">Question 1 of 5</span>
+          <span id="score-display">Score: 0</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <div class="score-dots" id="score-dots"></div>
+      </div>
+
+      <div class="question-card">
+        <div class="question-header">
+          <span>🔍</span>
+          <span id="question-number">Question 1</span>
+        </div>
+        <div class="question-text" id="question-text"></div>
+        <div class="answers" id="answers"></div>
+        <div class="feedback" id="feedback"></div>
+      </div>
+
+      <button class="next-btn" id="next-btn" disabled>Next Question →</button>
+    </div>
+
+    <div class="results" id="results">
+      <h2>🏆</h2>
+      <h2>Quiz Complete!</h2>
+      <div class="final-score" id="final-score">0/5</div>
+      <p style="font-size: 1.3rem; color: #FF9900;">Your Final Score</p>
+
+      <div class="score-breakdown">
+        <div class="score-item">
+          <h3 id="correct-count">0</h3>
+          <p>Correct</p>
+        </div>
+        <div class="score-item">
+          <h3 id="incorrect-count">0</h3>
+          <p>Incorrect</p>
+        </div>
+        <div class="score-item">
+          <h3 id="accuracy">0%</h3>
+          <p>Accuracy</p>
+        </div>
+      </div>
+
+      <p class="score-message" id="score-message"></p>
+
+      <div class="form-section" id="form-section">
+        <h3>Record Your Score</h3>
+        <div style="background: rgba(255, 153, 0, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+          <p style="margin: 0;"><strong>🎯 Save Your Achievement</strong></p>
+          <p style="margin: 5px 0 0 0; font-size: 0.85rem;">Enter your details below to record your quiz completion and join the Amazon Trivia leaderboard!</p>
+        </div>
+        <form id="completion-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label>First Name</label>
+              <input type="text" id="first-name" required>
+            </div>
+            <div class="form-group">
+              <label>Last Name</label>
+              <input type="text" id="last-name" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Username</label>
+            <input type="text" id="username" required>
+          </div>
+          <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" id="email" required>
+          </div>
+          <button type="submit" class="submit-btn">✅ Submit & Record Score</button>
+        </form>
+      </div>
+
+      <div class="confirmation" id="confirmation">
+        <div class="checkmark">✓</div>
+        <h3>Score Recorded! 🎉</h3>
+        <p style="font-size: 1.2rem; margin-bottom: 15px;">
+          <strong>Congrats, <span id="user-name"></span>!</strong>
+        </p>
+        <p>Your score of <strong id="recorded-score"></strong> has been saved to the leaderboard.</p>
+        <p style="font-size: 0.9rem; color: #888; margin-top: 10px;">A confirmation has been sent to <span id="user-email"></span>.</p>
+        <button class="play-again-btn" onclick="location.reload()">🔄 Play Again</button>
+      </div>
+    </div>
+
+    <div class="footer">
+      Amazon Trivia Challenge &nbsp;•&nbsp; All facts verified &nbsp;•&nbsp; For entertainment purposes
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        question: "In what year was Amazon founded by Jeff Bezos?",
+        answers: ["1994", "1997", "2000"],
+        correct: 0,
+        explanation: "Amazon was founded in 1994 in Jeff Bezos's garage in Bellevue, Washington. It started as an online bookstore and has since grown into one of the world's largest companies!"
+      },
+      {
+        question: "What was the first product Amazon sold online?",
+        answers: ["Electronics", "Books", "Clothing"],
+        correct: 1,
+        explanation: "Amazon's first sale was a book! The company started as an online bookstore because books were easy to ship and had universal appeal. The first book sold was 'Fluid Concepts and Creative Analogies' by Douglas Hofstadter."
+      },
+      {
+        question: "Which Amazon service revolutionized cloud computing?",
+        answers: ["Amazon Prime", "AWS (Amazon Web Services)", "Alexa"],
+        correct: 1,
+        explanation: "AWS (Amazon Web Services) launched in 2006 and transformed how businesses use technology. It's now the world's leading cloud platform, powering everything from startups to Fortune 500 companies!"
+      },
+      {
+        question: "What does the arrow in Amazon's logo represent?",
+        answers: ["Fast delivery", "A to Z (everything)", "A smile"],
+        correct: 1,
+        explanation: "The arrow goes from 'A' to 'Z', symbolizing that Amazon sells everything from A to Z. It also forms a smile, representing customer satisfaction. Clever design with double meaning!"
+      },
+      {
+        question: "Amazon's 'Prime Air' project aims to deliver packages using what?",
+        answers: ["Drones", "Robots", "Self-driving trucks"],
+        correct: 0,
+        explanation: "Prime Air is Amazon's drone delivery service designed to safely deliver packages in 30 minutes or less using autonomous drones. The future of delivery is taking flight!"
+      }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+    let selectedAnswer = null;
+    let answerHistory = [];
+
+    function initQuiz() {
+      loadQuestion();
+      updateScoreDots();
+    }
+
+    function loadQuestion() {
+      const q = questions[currentQuestion];
+      document.getElementById('question-number').textContent = `Question ${currentQuestion + 1}`;
+      document.getElementById('question-counter').textContent = `Question ${currentQuestion + 1} of ${questions.length}`;
+      document.getElementById('question-text').textContent = q.question;
+      
+      const answersDiv = document.getElementById('answers');
+      answersDiv.innerHTML = '';
+      
+      q.answers.forEach((answer, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'answer-btn';
+        btn.textContent = answer;
+        btn.onclick = () => selectAnswer(index);
+        answersDiv.appendChild(btn);
+      });
+
+      document.getElementById('feedback').classList.remove('show');
+      document.getElementById('next-btn').disabled = true;
+      selectedAnswer = null;
+
+      updateProgress();
+    }
+
+    function selectAnswer(index) {
+      if (selectedAnswer !== null) return;
+
+      selectedAnswer = index;
+      const q = questions[currentQuestion];
+      const buttons = document.querySelectorAll('.answer-btn');
+      
+      buttons.forEach((btn, i) => {
+        btn.disabled = true;
+        if (i === q.correct) {
+          btn.classList.add('correct');
+        } else if (i === selectedAnswer) {
+          btn.classList.add('incorrect');
+        }
+      });
+
+      const feedback = document.getElementById('feedback');
+      feedback.classList.add('show');
+      
+      if (selectedAnswer === q.correct) {
+        feedback.classList.add('correct');
+        feedback.innerHTML = `<strong>✅ Correct!</strong><br>${q.explanation}`;
+        score++;
+        answerHistory.push(true);
+      } else {
+        feedback.classList.add('incorrect');
+        feedback.innerHTML = `<strong>❌ Incorrect!</strong><br>The correct answer is: <strong>${q.answers[q.correct]}</strong><br>${q.explanation}`;
+        answerHistory.push(false);
+      }
+
+      document.getElementById('score-display').textContent = `Score: ${score}`;
+      document.getElementById('next-btn').disabled = false;
+      updateScoreDots();
+    }
+
+    function updateProgress() {
+      const progress = ((currentQuestion + 1) / questions.length) * 100;
+      document.getElementById('progress-fill').style.width = progress + '%';
+    }
+
+    function updateScoreDots() {
+      const dotsDiv = document.getElementById('score-dots');
+      dotsDiv.innerHTML = '';
+      
+      for (let i = 0; i < questions.length; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'score-dot';
+        if (i < answerHistory.length) {
+          dot.classList.add(answerHistory[i] ? 'correct' : 'incorrect');
+        }
+        dotsDiv.appendChild(dot);
+      }
+    }
+
+    function nextQuestion() {
+      currentQuestion++;
+      
+      if (currentQuestion < questions.length) {
+        loadQuestion();
+      } else {
+        showResults();
+      }
+    }
+
+    function showResults() {
+      document.getElementById('quiz-section').style.display = 'none';
+      document.getElementById('results').classList.add('show');
+      
+      const accuracy = Math.round((score / questions.length) * 100);
+      
+      document.getElementById('final-score').textContent = `${score}/${questions.length}`;
+      document.getElementById('correct-count').textContent = score;
+      document.getElementById('incorrect-count').textContent = questions.length - score;
+      document.getElementById('accuracy').textContent = accuracy + '%';
+      
+      let message = '';
+      if (score === questions.length) {
+        message = '🌟 Perfect score! You\'re an Amazon expert!';
+      } else if (score >= 4) {
+        message = '🎉 Excellent work! You know your Amazon facts!';
+      } else if (score >= 3) {
+        message = '👍 Good job! You have solid Amazon knowledge!';
+      } else if (score >= 2) {
+        message = '📚 Not bad! Keep learning about Amazon!';
+      } else {
+        message = '💪 Keep trying! There\'s always room to learn more!';
+      }
+      
+      document.getElementById('score-message').textContent = message;
+    }
+
+    document.getElementById('next-btn').addEventListener('click', nextQuestion);
+
+    document.getElementById('completion-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const firstName = document.getElementById('first-name').value;
+      const lastName = document.getElementById('last-name').value;
+      const username = document.getElementById('username').value;
+      const email = document.getElementById('email').value;
+      
+      document.getElementById('form-section').style.display = 'none';
+      document.getElementById('confirmation').classList.add('show');
+      
+      document.getElementById('user-name').textContent = firstName;
+      document.getElementById('recorded-score').textContent = `${score}/${questions.length}`;
+      document.getElementById('user-email').textContent = email;
+    });
+
+    initQuiz();
+  </script>
+</body>
+</html>
+
